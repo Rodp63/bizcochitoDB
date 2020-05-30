@@ -63,15 +63,14 @@ void response::_create_table(void *args)
   args_new_table *valid_args = (args_new_table*) args;
   string _table_path = "metadata/tables/" + valid_args->name + ".gaa";
   string _table_name = valid_args->name;
-  for(meta_table &db_table : *db_tables)
-    {
-      if(db_table.name == _table_name)
-	{
-	  cout<<"ERROR: La tabla \'"<<_table_name<<"\' ya existe\n"<<endl;
-	  delete valid_args;
-	  return;
-	}
-    }
+  for(meta_table &db_table : *db_tables){
+    if(db_table.name == _table_name)
+      {
+	cout<<"ERROR: La tabla \'"<<_table_name<<"\' ya existe\n"<<endl;
+	delete valid_args;
+	return;
+      }
+  }
   ofstream tables_file(META_TABLES_PATH, ofstream::app);
   tables_file << _table_name << '#' << _table_path << '\n';
   tables_file.close();
