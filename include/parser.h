@@ -1,5 +1,5 @@
 #pragma once
-#include "args.h"
+#include "db_env.h"
 
 using namespace std;
 
@@ -16,7 +16,6 @@ class parser{
   
   map<string,int> keys;
   map<int,ptr_par> decode;
-  vector<string> arg_types = {"int", "text", "date"};
 
   void get_type();
   string get_word(char,char);

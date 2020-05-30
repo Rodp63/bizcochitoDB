@@ -5,8 +5,9 @@
 #include <vector>
 #include <map>
 #include <stdio.h>
+using namespace std;
 
-// Codes
+// CODES
 #define NOTHING -1
 #define SYNTAX_ERROR 0
 #define TYPE_ERROR 1
@@ -20,8 +21,12 @@
 // PATHS
 #define META_TABLES_PATH "metadata/db_tables.gaa"
 #define META_INDEXES_PATH "metadata/db_indexes.gaa"
+#define TABLES_INFO_PATH "metadata/tables/"
 
-using namespace std;
+// DB VARIABLES
+static vector<string> data_types = {"int", "text", "date"};
+
+// DB TYPES
 typedef pair<int, void*> query_info;
 
 struct meta_table{
@@ -30,9 +35,13 @@ struct meta_table{
   meta_table(string &a, string &b) : name(a), path(b) {}
 };
 
-struct args_new_table{
+struct table_colum{
+  string name;
+  string type;
+  table_colum(string &a, string &b) : name(a), type(b) {}
+};
 
+struct args_table{
   string name;
   vector<pair<string, string> > data;
-  
 };

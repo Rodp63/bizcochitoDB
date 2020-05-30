@@ -4,7 +4,7 @@ using namespace std;
 
 bizcochitoDB:: bizcochitoDB()
 {
-  load_tables();
+  db_tables = read_gaa_file<meta_table>(META_TABLES_PATH);
   par = new parser();
   res = new response(&db_tables);
 }
@@ -26,19 +26,4 @@ void bizcochitoDB::run()
       par->get_query();
       res->solve(par->parse(), running);
     }
-}
-
-void bizcochitoDB::load_tables()
-{
-  ifstream meta_tables;
-  meta_tables.open(META_TABLES_PATH);
-  string table_name, table_path, current_text;
-  while(meta_tables >> current_text)
-    {
-      int partition = current_text.find('#');
-      table_name = current_text.substr(0, partition);
-      table_path = current_text.substr(partition+1);
-      db_tables.emplace_back(table_name, table_path);
-    }
-  meta_tables.close();
 }

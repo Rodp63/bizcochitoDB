@@ -51,8 +51,7 @@ void parser::_create_table()
   string table_name = get_word('{');
   if(!table_name.empty() && current_pos < query_size && query[current_pos++] == '{')
     {
-      args_new_table *current_args = new args_new_table;
-      current_args->name = table_name;
+      args_table *current_args = new args_table;
       while(current_pos < query_size && query[current_pos] != '}')
 	{
 	  string name_arg = get_word(',', '}');
@@ -63,13 +62,13 @@ void parser::_create_table()
 	      delete current_args;
 	      return;
 	    }
-	  if(find(arg_types.begin(), arg_types.end(), type_arg) == arg_types.end())
+	  if(find(data_types.begin(), data_types.end(), type_arg) == data_types.end())
 	    {
 	      query_type = TYPE_ERROR;
 	      delete current_args;
 	      return;
 	    }
-	  if(name_arg == type_arg)
+	  if(name_arg == type_arg) // exclude reserved characters
 	    {
 	      query_type = NAME_ERROR;
 	      delete current_args;
@@ -103,6 +102,7 @@ void parser::_create_table()
 	  delete current_args;
 	  return;
 	}
+      current_args->name = table_name;
       query_args = (void*)current_args; // todo ok!
     }
   else

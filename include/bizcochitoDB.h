@@ -1,6 +1,7 @@
 #pragma once
 #include "parser.h"
 #include "response.h"
+#include "tools.h"
 
 using namespace std;
 
@@ -10,8 +11,6 @@ class bizcochitoDB{
   response* res;
   bool running;
   vector<meta_table> db_tables;
-
-  void load_tables();
 
 public:
   

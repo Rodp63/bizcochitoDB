@@ -4,22 +4,26 @@ using namespace std;
 
 void response::_syntax_error(void *args)
 {
-  cout<<"ERROR: <code "<<SYNTAX_ERROR<<"> Error de sintaxis\n"<<endl;
+  cout<<"ERROR: <code "<<SYNTAX_ERROR<<"> ";
+  cout<<"Error de sintaxis\n"<<endl;
 }
 
 void response::_type_error(void *args)
 {
-  cout<<"ERROR: <code "<<TYPE_ERROR<<"> Error de tipo, el tipo de dato especificado no es valido\n"<<endl;
+  cout<<"ERROR: <code "<<TYPE_ERROR<<"> ";
+  cout<<"Error de tipo, el tipo de dato especificado no es valido\n"<<endl;
 }
 
 void response::_name_error(void *args)
 {
-  cout<<"ERROR: <code "<<NAME_ERROR<<"> El nombre del campo ingresado no es valido\n"<<endl;
+  cout<<"ERROR: <code "<<NAME_ERROR<<"> ";
+  cout<<"El nombre del campo ingresado no es valido\n"<<endl;
 }
 
 void response::_empty_error(void *args)
 {
-  cout<<"ERROR: <code "<<EMPTY_ERROR<<"> Los campos no pueden ser vacios\n"<<endl;
+  cout<<"ERROR: <code "<<EMPTY_ERROR<<"> ";
+  cout<<"Uno o mas campos de la consulta estan vacios\n"<<endl;
 }
 
 void response::_help(void *args)
@@ -60,9 +64,9 @@ void response::_dt(void *args)
 
 void response::_create_table(void *args)
 {
-  args_new_table *valid_args = (args_new_table*) args;
-  string _table_path = "metadata/tables/" + valid_args->name + ".gaa";
+  args_table *valid_args = (args_table*) args;
   string _table_name = valid_args->name;
+  string _table_path = TABLES_INFO_PATH + _table_name + ".gaa";
   for(meta_table &db_table : *db_tables){
     if(db_table.name == _table_name)
       {
@@ -72,17 +76,18 @@ void response::_create_table(void *args)
       }
   }
   ofstream tables_file(META_TABLES_PATH, ofstream::app);
-  tables_file << _table_name << '#' << _table_path << '\n';
-  tables_file.close();
-  db_tables->emplace_back(_table_name, _table_path);
   ofstream table_info(_table_path);
+  tables_file << _table_name << '#' << _table_path << '\n';
+  db_tables->emplace_back(_table_name, _table_path);
   for(auto colum : valid_args->data)
     {
-      string colum_name = colum.first, colum_type = colum.second;
+      string colum_name = colum.first;
+      string colum_type = colum.second;
       table_info << colum_name << '#' << colum_type << '\n';
     }
-  table_info.close();
   cout<<"Tabla \'"<<_table_name<<"\' creada exitosamente\n"<<endl;
+  table_info.close();
+  tables_file.close();
   delete valid_args;
 }
 
