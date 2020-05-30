@@ -100,7 +100,6 @@ void response::solve(query_info query, bool &running)
   (this->*keys[query_code])(query.second);
 }
 
-
 response::response(vector<meta_table>* tables) : db_tables(tables)
 {
   keys[SYNTAX_ERROR] = &response::_syntax_error;
