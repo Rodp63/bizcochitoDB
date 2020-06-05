@@ -2,9 +2,9 @@
 
 using namespace std;
 
-bizcochitoDB:: bizcochitoDB()
+bizcochitoDB::bizcochitoDB()
 {
-  db_tables = read_gaa_file<meta_table>(META_TABLES_PATH);
+  db_tables = tools::read_gaa_file<meta_table>(META_TABLES_PATH);
   par = new parser();
   res = new response(&db_tables);
 }
@@ -22,7 +22,7 @@ void bizcochitoDB::run()
   running = true;
   while(running)
     {
-      cout<<"|> ";
+      cout<<"root#> ";
       par->get_query();
       res->solve(par->parse(), running);
     }

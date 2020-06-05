@@ -10,30 +10,25 @@ class parser{
   string query;
   int current_pos;
   int query_size;
-
   int query_type;
   void* query_args;
   
   map<string,int> keys;
   map<int,ptr_par> decode;
+  vector<meta_table>* db_tables;
 
   void get_type();
   string get_word(char,char);
+  string get_phrase(char);
+  bool check_word(string &);
 
+  void _d_table();
   void _create_table();
+  void _insert_into();
   
 public:
   
-  parser()
-  {
-    keys["exit"] = EXIT;
-    keys["help"] = HELP;
-    keys["\\dt"] = DT;
-    keys["create_table"] = CREATE_TABLE;
-
-    decode[CREATE_TABLE] = &parser::_create_table;
-  }
-  
+  parser();
   void get_query();
   query_info parse();
   

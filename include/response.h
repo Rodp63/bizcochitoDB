@@ -1,5 +1,6 @@
 #pragma once
 #include "db_env.h"
+#include "tools.h"
 
 using namespace std;
 
@@ -11,17 +12,21 @@ class response{
   vector<meta_table>* db_tables;
   
   int query_code;
-  fun_res keys[10];
+  fun_res keys[20];
+
+  void print_table(vector_gaa &, string, string);
   
-  void _syntax_error(void *args);
-  void _type_error(void *arg);
-  void _name_error(void *args);
-  void _empty_error(void *args);
+  void _syntax_error(void *);
+  void _type_error(void *);
+  void _name_error(void *);
+  void _empty_error(void *);
   
-  void _help(void *args);
-  void _dt(void *args);
-  
-  void _create_table(void *args);
+  void _help(void *);
+  void _dt(void *);
+
+  void _d_table(void *);
+  void _create_table(void *);
+  void _insert_into(void *);
   
 public:
 
