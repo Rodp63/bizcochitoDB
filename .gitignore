@@ -2,6 +2,6 @@
 cake
 
 # files
-metadata/*.gaa
-*.aea
-*.gaa
+/metadata
+/data
+/indexes
