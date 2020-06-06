@@ -25,6 +25,7 @@ class parser{
   void _d_table();
   void _create_table();
   void _insert_into();
+  void _select();
   
 public:
   

@@ -1,5 +1,7 @@
 # executables
 cake
-*.out
-*.gaa
+
+# files
+metadata/*.gaa
 *.aea
+*.gaa

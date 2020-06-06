@@ -21,6 +21,10 @@ using namespace std;
 #define D 7
 #define CREATE_TABLE 8
 #define INSERT_INTO 9
+#define SELECT 10
+
+#define GAA_TOKEN '#'
+#define AEA_TOKEN '&'
 
 
 // PATHS
@@ -32,9 +36,9 @@ using namespace std;
 
 // DB VARIABLES
 enum {INT, TEXT, DATE};
-static string __NULL = "o_o/";
+static string __NULL = "nill";
 static vector<string> data_types = {"int", "text", "date"};
-static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&','*',',','^'};
+static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&','~',',','^'};
 
 
 //DB ACTIONS
@@ -44,25 +48,34 @@ static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&',
 
 // DB TYPES
 typedef pair<int, void*> query_info;
-typedef vector<pair<string, string> > vector_gaa;
+typedef pair<string, string> str_duo;
+typedef vector<vector<string> > table_ram;
 
 struct meta_table{
   string name;
-  string path;
-  pair<string,string> cast_pair(){ return make_pair(name, path);}
-  meta_table(string &a, string &b) : name(a), path(b) {}
+  string path_info;
+  string path_data;
+  vector<string> cast_vec(){ return {name, path_info, path_data}; }
+  meta_table(vector<string> inf){
+    name = inf[0];
+    path_info = inf[1];
+    path_data = inf[2];
+  }
 };
 
 struct table_colum{
   string name;
   string type;
-  pair<string,string> cast_pair(){ return make_pair(name, type);}
-  table_colum(string &a, string &b) : name(a), type(b) {}
+  vector<string> cast_vec(){ return {name, type}; }
+  table_colum(vector<string> inf){
+    name = inf[0];
+    type = inf[1];
+  }
 };
 
 struct args_table{
   string name;
-  vector_gaa data; //colum - type
+  vector<str_duo> data; //colum - type
 };
 
 struct args_insert{
@@ -72,3 +85,8 @@ struct args_insert{
   vector<string> val_data;
 };
 
+struct args_select{
+  string table;
+  string condition;
+  vector<string> col_data;
+};

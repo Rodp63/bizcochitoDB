@@ -4,7 +4,7 @@ using namespace std;
 
 bizcochitoDB::bizcochitoDB()
 {
-  db_tables = tools::read_gaa_file<meta_table>(META_TABLES_PATH);
+  db_tables = tools::read_file<meta_table>(META_TABLES_PATH, GAA_TOKEN);
   par = new parser();
   res = new response(&db_tables);
 }

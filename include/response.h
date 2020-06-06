@@ -14,7 +14,7 @@ class response{
   int query_code;
   fun_res keys[20];
 
-  void print_table(vector_gaa &, string, string);
+  void print_table(table_ram &, vector<string>);
   
   void _syntax_error(void *);
   void _type_error(void *);
@@ -27,6 +27,7 @@ class response{
   void _d_table(void *);
   void _create_table(void *);
   void _insert_into(void *);
+  void _select(void *);
   
 public:
 
