@@ -22,13 +22,15 @@ using namespace std;
 #define CREATE_TABLE 8
 #define INSERT_INTO 9
 #define SELECT 10
+#define UPDATE 11
+#define DELETE 12
 
 #define GAA_TOKEN '#'
 #define AEA_TOKEN '&'
 
-#define EQUAL 0
-#define LESS 1
-#define GREATER 2
+#define EQUAL 100
+#define LESS 101
+#define GREATER 201
 
 
 // PATHS
@@ -39,7 +41,6 @@ using namespace std;
 
 
 // DB VARIABLES
-enum {INT, TEXT, DATE};
 static string __NULL = "nill";
 static vector<string> data_types = {"int", "text", "date"};
 static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&','~',',','^'};
@@ -99,4 +100,15 @@ struct args_select{
   string table;
   args_where *condition;
   vector<string> col_data;
+};
+
+struct args_update{
+  string table;
+  args_where *condition;
+  vector<str_duo> data; // colum - value
+};
+
+struct args_delete{
+  string table;
+  args_where *condition;
 };

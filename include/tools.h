@@ -41,20 +41,20 @@ struct tools{
 
   static bool check_type(const string &data, string type)
   {
-    if(data.empty()) return false;
+    if(data.empty())
+      return false;
     if(type == "int"){
       int ind = 0;
       if(data[0] == '-' || data[0] == '+') ind++;
       for(int i = ind; i < data.size(); i++){
 	if(!isdigit(data[i])) return false;
-      }
-    }
+      }}
     if(type == "text" && (data[0] != '\'' || data.back() != '\''))
       return false;
     if(type == "date"){
       if(data[0] != '\'' || data.back() != '\'')
 	return false;
-      
+      // Check date!!
     }
     return true;
   }

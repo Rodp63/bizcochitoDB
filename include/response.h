@@ -28,6 +28,8 @@ class response{
   void _create_table(void *);
   void _insert_into(void *);
   void _select(void *);
+  void _update(void *);
+  void _delete(void *);
   
 public:
 

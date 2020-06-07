@@ -198,7 +198,7 @@ void response::_select(void *args)
 	    q_cols.push_back(_condition->colum);
 	  }
 	  else{
-	    cout<<"ERROR: Condicion mal formulada. Intente utilizar el formato [colum operator value]\n"<<endl;
+	    cout<<"ERROR: Condicion mal formulada. Utilice el formato [columna operador valor]\n"<<endl;
 	    _DONE;
 	  }}
 	vector<int> idx_col;
@@ -215,11 +215,11 @@ void response::_select(void *args)
 	  }}
 	int where_idx;
 	if(where_active){
+	  where_idx = idx_col.back();
 	  if(!tools::check_type(_condition->value, table_info[where_idx].type)){
 	    cout<<"ERROR: El tipo de la condicion y el tipo de la columna son diferentes\n"<<endl;
 	    _DONE;
 	  }
-	  where_idx = idx_col.back();
 	  idx_col.pop_back();
 	  q_cols.pop_back();
 	}
@@ -233,6 +233,127 @@ void response::_select(void *args)
 	    table_query.push_back(tmp);
 	  }}
 	print_table(table_query, q_cols);
+	_DONE;
+      }
+  }
+  cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
+  _DONE;
+}
+
+void response::_update(void *args)
+{
+  args_update* valid_args = (args_update*) args;
+  string _table_name = valid_args->table;
+  for(const meta_table &db_table : *db_tables){
+    if(db_table.name == _table_name)
+      {
+	vector<table_colum> table_info = tools::read_file<table_colum>(db_table.path_info, GAA_TOKEN);
+	vector<str_duo> &u_data = valid_args->data;
+	vector<string> new_data(table_info.size());
+	vector<bool> change(table_info.size(), false);
+	for(const str_duo &col : u_data){
+	  bool ok = false;
+	  for(int i = 0; i < table_info.size(); i++)
+	    if(col.first == table_info[i].name){
+	      ok = true;
+	      if(!tools::check_type(col.second, table_info[i].type)){
+		cout<<"ERROR: El tipo del nuevo valor y el tipo de la columna son diferentes\n"<<endl;
+		_DONE;
+	      }
+	      new_data[i] = col.second;
+	      change[i] = true;
+	    }
+	  if(!ok){
+	    cout<<"ERROR: La columna \'"<<col.first<<"\' no existe en la tabla\n"<<endl;
+	    _DONE;
+	  }}
+	bool where_active = false;
+	args_where* _condition = valid_args->condition;
+	if(_condition){
+	  if(_condition->ok)
+	    where_active = true;
+	  else{
+	    cout<<"ERROR: Condicion mal formulada. Utilice  el formato [columna operador valor]\n"<<endl;
+	    _DONE;
+	  }}
+	int idx = -1;
+	if(where_active){
+	  for(int i = 0; i < table_info.size(); i++)
+	    if(_condition->colum == table_info[i].name)
+	      idx = i;
+	  if(idx == -1){
+	    cout<<"ERROR: La columna \'"<<_condition->colum<<"\' no existe en la tabla\n"<<endl;
+	    _DONE;
+	  }
+	  if(!tools::check_type(_condition->value, table_info[idx].type)){
+	    cout<<"ERROR: El tipo de la condicion y el tipo de la columna son diferentes\n"<<endl;
+	    _DONE;
+	  }
+	}
+	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+        ofstream new_table(db_table.path_data);
+	for(const vector<string> &row : table_data){
+	  if(where_active && !tools::compare_values(row[idx], _condition->value, table_info[idx].type, _condition->opt))
+	    for(int i = 0; i < row.size(); i++)
+	      new_table << row[i] << AEA_TOKEN;
+	  else{
+	    for(int i = 0; i < row.size(); i++){
+	      if(change[i]) new_table << new_data[i];
+	      else new_table << row[i];
+	      new_table << AEA_TOKEN;
+	    }}
+	  new_table << '\n';
+	}
+	cout<<"Modificacion exitosa\n"<<endl;
+	new_table.close();
+	_DONE;
+      }
+  }
+  cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
+  _DONE;
+}
+
+void response::_delete(void *args)
+{
+  args_delete* valid_args = (args_delete*) args;
+  string _table_name = valid_args->table;
+  for(const meta_table &db_table : *db_tables){
+    if(db_table.name == _table_name)
+      {
+	vector<table_colum> table_info = tools::read_file<table_colum>(db_table.path_info, GAA_TOKEN);
+	bool where_active = false;
+	args_where* _condition = valid_args->condition;
+	if(_condition){
+	  if(_condition->ok)
+	    where_active = true;
+	  else{
+	    cout<<"ERROR: Condicion mal formulada. Utilice  el formato [columna operador valor]\n"<<endl;
+	    _DONE;
+	  }}
+	int idx = -1;
+	if(where_active){
+	  for(int i = 0; i < table_info.size(); i++)
+	    if(_condition->colum == table_info[i].name)
+	      idx = i;
+	  if(idx == -1){
+	    cout<<"ERROR: La columna \'"<<_condition->colum<<"\' no existe en la tabla\n"<<endl;
+	    _DONE;
+	  }
+	  if(!tools::check_type(_condition->value, table_info[idx].type)){
+	    cout<<"ERROR: El tipo de la condicion y el tipo de la columna son diferentes\n"<<endl;
+	    _DONE;
+	  }
+	}
+	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+        ofstream new_table(db_table.path_data);
+	for(const vector<string> &row : table_data){
+	  if(where_active && !tools::compare_values(row[idx], _condition->value, table_info[idx].type, _condition->opt)){
+	    for(int i = 0; i < row.size(); i++)
+	      new_table << row[i] << AEA_TOKEN;
+	    new_table << '\n';
+	  }}
+	cout<<"Borrado exitoso\n"<<endl;
+	new_table.close();
 	_DONE;
       }
   }
@@ -267,4 +388,6 @@ response::response(vector<meta_table>* tables) : db_tables(tables)
   keys[CREATE_TABLE] = &response::_create_table;
   keys[INSERT_INTO] = &response::_insert_into;
   keys[SELECT] = &response::_select;
+  keys[UPDATE] = &response::_update;
+  keys[DELETE] = &response::_delete;
 }

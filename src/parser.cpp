@@ -2,26 +2,6 @@
 
 using namespace std;
 
-parser::parser()
-{
-  keys["exit"] = EXIT;
-  keys["help"] = HELP;
-  keys["\\dt"] = DT;
-  keys["\\d"] = D;
-  keys["create_table"] = CREATE_TABLE;
-  keys["insert_into"] = INSERT_INTO;
-  keys["select"] = SELECT;
-
-  keys["="] = EQUAL;
-  keys["<"] = LESS;
-  keys[">"] = GREATER;
-  
-  decode[D] = &parser::_d_table;
-  decode[CREATE_TABLE] = &parser::_create_table;
-  decode[INSERT_INTO] = &parser::_insert_into;
-  decode[SELECT] = &parser::_select;
-}
-
 void parser::get_query()
 {
   getline(cin, query);
@@ -29,14 +9,15 @@ void parser::get_query()
   current_pos = 0;
 }
 
-string parser::get_word(char token1 = ' ', char token2 = ' ')
+string parser::get_word(char token1 = ' ', char token2 = ' ', char token3 = ' ')
 {
   string word;
   for(; current_pos < query_size && query[current_pos] == ' '; current_pos++);
   for(; current_pos < query_size
 	&& query[current_pos] != ' '
 	&& query[current_pos] != token1
-	&& query[current_pos] != token2;)
+	&& query[current_pos] != token2
+	&& query[current_pos] != token3;)
     {
       word += query[current_pos];
       current_pos++;
@@ -59,16 +40,14 @@ string parser::get_phrase(char token)
 void parser::get_type()
 {
   string tipo = get_word();
-  if(tipo.empty())
-    {
-      query_type = NOTHING;
-      return;
-    }
-  if(keys.find(tipo) == keys.end())
-    {
-      query_type = SYNTAX_ERROR;
-      return;
-    }
+  if(tipo.empty()){
+    query_type = NOTHING;
+    return;
+  }
+  if(keys.find(tipo) == keys.end()){
+    query_type = SYNTAX_ERROR;
+    return;
+  }
   query_type = keys[tipo];
   if((query_type == EXIT ||
       query_type == HELP ||
@@ -89,13 +68,13 @@ bool parser::check_word(string &text)
   return true;
 }
 
-args_where* parser::parse_where(string w_query)
+args_where* parser::parse_condition()
 {
   args_where *args = new args_where;
-  string col = get_word();
-  string op = get_word();
-  string val;
-  val = query[current_pos] == '\'' ? get_phrase('\'') : get_word();
+  string col = get_word('=', '<', '>');
+  string op = current_pos < query_size ? string(1, query[current_pos]) : __NULL;
+  for(current_pos++; current_pos < query_size && query[current_pos] == ' '; current_pos++);
+  string val = (current_pos < query_size && query[current_pos] == '\'') ? get_phrase('\'') : get_word();
   if(keys.find(op) == keys.end())
     args->ok = false;
   else{
@@ -280,7 +259,7 @@ void parser::_select()
 	}
       current_args->col_data.push_back(col);
     }
-  if(current_pos != pos_from)
+  if(current_pos != pos_from || current_args->col_data.empty())
     {
       THROW_(SYNTAX_ERROR);
     }
@@ -296,20 +275,124 @@ void parser::_select()
     current_args->condition = nullptr;
   else{
     if(tag == "where")
-      current_args->condition = parse_where(query.substr(current_pos));
+      current_args->condition = parse_condition();
     else{
       THROW_(SYNTAX_ERROR);}
   }
   query_args = (void*) current_args; // Todo OK!! 
 }
 
+void parser::_update()
+{
+  args_update* current_args = new args_update;
+  string table_name = get_word();
+  if(table_name.empty() || !check_word(table_name))
+    {
+      THROW_(SYNTAX_ERROR);
+    }
+  current_args->table = table_name;
+  string tag = get_word();
+  if(tag == "set")
+    {
+      int limit = query.find(" where ");
+      limit = (limit == string::npos ? query_size : limit + 1);
+      while(current_pos < limit)
+	{
+	  string col = get_word('=');
+	  if(current_pos >= query_size || query[current_pos] != '=')
+	    {
+	      THROW_(SYNTAX_ERROR);
+	    }
+	  for(current_pos++; current_pos < query_size && query[current_pos] == ' '; current_pos++);
+	  string val = (current_pos < query_size && query[current_pos] == '\'') ? get_phrase('\'') : get_word(',');
+	  if(query[current_pos] == ',') current_pos++;
+	  else if(current_pos != limit)
+	    {
+	      THROW_(SYNTAX_ERROR);
+	    }
+	  current_args->data.emplace_back(col, val);
+	}
+      if(current_pos != limit)
+	{
+	  THROW_(SYNTAX_ERROR);
+	}
+      if(current_args->data.empty())
+	{
+	  THROW_(EMPTY_ERROR);
+	}
+      current_args->condition = nullptr;
+      if(current_pos < query_size)
+	{
+	  current_pos += 5;
+	  current_args->condition = parse_condition();
+	}
+      query_args = (void*) current_args; // Todo OK!! 
+    }
+  else{
+    THROW_(SYNTAX_ERROR);}
+}
+
+void parser::_delete()
+{
+  args_delete* current_args = new args_delete;
+  string tag = get_word();
+  if(tag == "from"){
+    string table_name = get_word();
+    if(table_name.empty() || !check_word(table_name))
+      {
+	THROW_(SYNTAX_ERROR);
+      }
+    current_args->table = table_name;
+    string w = get_word();
+    if(w.empty())
+      current_args->condition = nullptr;
+    else{
+      if(w == "where")
+	current_args->condition = parse_condition();	
+      else{
+	THROW_(SYNTAX_ERROR);}
+    }
+    query_args = (void*) current_args; // Todo OK!! 
+  }
+  else{
+    THROW_(SYNTAX_ERROR);}
+}
+
 query_info parser::parse()
 {
   get_type();
   query_args = nullptr;
+  if(query_type >= EQUAL)
+    {
+      query_type = SYNTAX_ERROR;
+    }
   if(query_type > DT)
     {
       (this->*decode[query_type])();
     }
   return make_pair(query_type, query_args);
+}
+
+parser::parser()
+{
+  keys["exit"] = EXIT;
+  keys["help"] = HELP;
+  keys["\\dt"] = DT;
+  keys["\\d"] = D;
+  keys["create_table"] = CREATE_TABLE;
+  keys["insert_into"] = INSERT_INTO;
+  keys["select"] = SELECT;
+  keys["update"] = UPDATE;
+  keys["delete"] = DELETE;
+
+  keys["="] = EQUAL;
+  keys["<"] = LESS;
+  keys[">"] = GREATER;
+  
+  decode[D] = &parser::_d_table;
+  decode[CREATE_TABLE] = &parser::_create_table;
+  decode[INSERT_INTO] = &parser::_insert_into;
+  decode[SELECT] = &parser::_select;
+  decode[UPDATE] = &parser::_update;
+  decode[DELETE] = &parser::_delete;
 }

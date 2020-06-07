@@ -18,16 +18,18 @@ class parser{
   vector<meta_table>* db_tables;
 
   void get_type();
-  string get_word(char,char);
+  string get_word(char,char,char);
   string get_phrase(char);
   bool check_word(string &);
   bool check_coma();
-  args_where* parse_where(string);
+  args_where* parse_condition();
   
   void _d_table();
   void _create_table();
   void _insert_into();
   void _select();
+  void _update();
+  void _delete();
   
 public:
   
