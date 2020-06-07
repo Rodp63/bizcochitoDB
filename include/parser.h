@@ -21,7 +21,9 @@ class parser{
   string get_word(char,char);
   string get_phrase(char);
   bool check_word(string &);
-
+  bool check_coma();
+  args_where* parse_where(string);
+  
   void _d_table();
   void _create_table();
   void _insert_into();

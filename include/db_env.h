@@ -26,6 +26,10 @@ using namespace std;
 #define GAA_TOKEN '#'
 #define AEA_TOKEN '&'
 
+#define EQUAL 0
+#define LESS 1
+#define GREATER 2
+
 
 // PATHS
 #define META_TABLES_PATH "metadata/db_tables.gaa"
@@ -44,7 +48,6 @@ static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&',
 //DB ACTIONS
 #define THROW_(ERR) query_type = ERR; delete current_args; return
 #define _DONE delete valid_args; return
-
 
 // DB TYPES
 typedef pair<int, void*> query_info;
@@ -85,8 +88,15 @@ struct args_insert{
   vector<string> val_data;
 };
 
+struct args_where{
+  bool ok;
+  string colum;
+  string value;
+  int opt;
+};
+
 struct args_select{
   string table;
-  string condition;
+  args_where *condition;
   vector<string> col_data;
 };

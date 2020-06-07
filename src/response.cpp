@@ -162,7 +162,7 @@ void response::_insert_into(void *args)
 		q_cols.erase(q_cols.begin()+pos);
 	      }
 	      else{
-		cout<<"ERROR: El tipo de la entrada y el tipo de la columna difieren\n"<<endl;
+		cout<<"ERROR: El tipo de entrada y el tipo de columna difieren\n"<<endl;
 		_DONE;
 	      }
 	    }}
@@ -190,6 +190,17 @@ void response::_select(void *args)
 	  for(const table_colum &colum : table_info)
 	    q_cols.push_back(colum.name);
 	}
+	bool where_active = false;
+	args_where* _condition = valid_args->condition;
+	if(_condition){
+	  if(_condition->ok){
+	    where_active = true;
+	    q_cols.push_back(_condition->colum);
+	  }
+	  else{
+	    cout<<"ERROR: Condicion mal formulada. Intente utilizar el formato [colum operator value]\n"<<endl;
+	    _DONE;
+	  }}
 	vector<int> idx_col;
 	for(const string &col : q_cols){
 	  bool ok = false;
@@ -202,14 +213,25 @@ void response::_select(void *args)
 	    cout<<"ERROR: La columna \'"<<col<<"\' no existe en la tabla\n"<<endl;
 	    _DONE;
 	  }}
+	int where_idx;
+	if(where_active){
+	  if(!tools::check_type(_condition->value, table_info[where_idx].type)){
+	    cout<<"ERROR: El tipo de la condicion y el tipo de la columna son diferentes\n"<<endl;
+	    _DONE;
+	  }
+	  where_idx = idx_col.back();
+	  idx_col.pop_back();
+	  q_cols.pop_back();
+	}
 	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
 	table_ram table_query;
 	for(const vector<string> &row : table_data){
-	  vector<string> tmp;
-	  for(int idx : idx_col)
-	    tmp.push_back(row[idx]);
-	  table_query.push_back(tmp);
-	}
+	  if(!where_active || (where_active && tools::compare_values(row[where_idx], _condition->value, table_info[where_idx].type, _condition->opt))){
+	    vector<string> tmp;
+	    for(int idx : idx_col)
+	      tmp.push_back(row[idx]);
+	    table_query.push_back(tmp);
+	  }}
 	print_table(table_query, q_cols);
 	_DONE;
       }

@@ -4,6 +4,7 @@
 using namespace std;
 
 struct tools{
+  
   template<typename T>
   static vector<T> read_file(string path, char token)
   {
@@ -38,21 +39,43 @@ struct tools{
     return ans;
   }
 
-  static bool check_type(string &data, string type)
+  static bool check_type(const string &data, string type)
   {
-    if(type == "int")
-      {
-	
+    if(data.empty()) return false;
+    if(type == "int"){
+      int ind = 0;
+      if(data[0] == '-' || data[0] == '+') ind++;
+      for(int i = ind; i < data.size(); i++){
+	if(!isdigit(data[i])) return false;
       }
-    if(type == "text" || type == "date")
-      {
-	if(data[0] != '\'' || data.back() != '\'')
-	  return false;
-	if(type == "date")
-	  {
-	    
-	  }
-      }
+    }
+    if(type == "text" && (data[0] != '\'' || data.back() != '\''))
+      return false;
+    if(type == "date"){
+      if(data[0] != '\'' || data.back() != '\'')
+	return false;
+      
+    }
+    return true;
+  }
+
+  static bool compare_values(const string &a, const string &b, string type, int opt)
+  {
+    if(opt == EQUAL){
+      if(type == "int")
+	return stoi(a) == stoi(b);
+      return a == b;
+    }
+    if(opt == LESS){
+      if(type == "int")
+	return stoi(a) < stoi(b);
+      return a < b;
+    }
+    if(opt == GREATER){
+      if(type == "int")
+	return stoi(a) > stoi(b);
+      return a > b;
+    }
     return true;
   }
   

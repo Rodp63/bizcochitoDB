@@ -12,6 +12,10 @@ parser::parser()
   keys["insert_into"] = INSERT_INTO;
   keys["select"] = SELECT;
 
+  keys["="] = EQUAL;
+  keys["<"] = LESS;
+  keys[">"] = GREATER;
+  
   decode[D] = &parser::_d_table;
   decode[CREATE_TABLE] = &parser::_create_table;
   decode[INSERT_INTO] = &parser::_insert_into;
@@ -83,6 +87,28 @@ bool parser::check_word(string &text)
 	return false;
     }
   return true;
+}
+
+args_where* parser::parse_where(string w_query)
+{
+  args_where *args = new args_where;
+  string col = get_word();
+  string op = get_word();
+  string val;
+  val = query[current_pos] == '\'' ? get_phrase('\'') : get_word();
+  if(keys.find(op) == keys.end())
+    args->ok = false;
+  else{
+    int opp = keys[op];
+    if(col.empty() || val.empty() || current_pos < query_size)
+      args->ok = false;
+    else{
+      args->ok = true;
+      args->colum = col;
+      args->value = val;
+      args->opt = opp;
+    }}
+  return args;
 }
 
 void parser::_d_table()
@@ -266,14 +292,14 @@ void parser::_select()
     }
   current_args->table = table_name;
   string tag = get_word();
-  if(!tag.empty())
-    {
-      if(tag == "where"){
-	current_args->condition = query.substr(current_pos);
-      }
-      else{
-	THROW_(SYNTAX_ERROR);}
-    }
+  if(tag.empty())
+    current_args->condition = nullptr;
+  else{
+    if(tag == "where")
+      current_args->condition = parse_where(query.substr(current_pos));
+    else{
+      THROW_(SYNTAX_ERROR);}
+  }
   query_args = (void*) current_args; // Todo OK!! 
 }
 
