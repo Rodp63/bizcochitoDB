@@ -1,5 +1,6 @@
 #pragma once
 #include "db_env.h"
+#include "tools.h"
 
 using namespace std;
 

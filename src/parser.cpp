@@ -60,11 +60,12 @@ void parser::get_type()
 
 bool parser::check_word(string &text)
 {
-  for(char c : reserved_characters)
-    {
-      if(find(text.begin(), text.end(), c) != text.end())
-	return false;
-    }
+  if(tools::check_type(text, "int"))
+    return false;
+  for(char c : reserved_characters){
+    if(text.find(c) != string::npos)
+      return false;
+  }
   return true;
 }
 
@@ -173,13 +174,9 @@ void parser::_insert_into()
 	  while(current_pos < query_size && query[current_pos] != ')')
 	    {
 	      string col = get_word(',',')');
-	      if(col.empty())
+	      if(col.empty() || !check_word(col))
 		{
 		  THROW_(SYNTAX_ERROR);
-		}
-	      if(!check_word(col))
-		{
-		  THROW_(NAME_ERROR);
 		}
 	      if(current_pos < query_size)
 		{
@@ -244,13 +241,9 @@ void parser::_select()
   while(current_pos < pos_from)
     {
       string col = get_word(',');
-      if(col.empty())
+      if(col.empty() || !check_word(col))
 	{
 	  THROW_(SYNTAX_ERROR);
-	}
-      if(!check_word(col))
-	{
-	  THROW_(NAME_ERROR);
 	}
       if(query[current_pos] == ',') current_pos++;
       else if(current_pos != pos_from)

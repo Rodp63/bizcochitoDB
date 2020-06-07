@@ -17,7 +17,7 @@ void response::_type_error(void *args)
 void response::_name_error(void *args)
 {
   cout<<"ERROR: <code "<<NAME_ERROR<<"> ";
-  cout<<"Error de nombre, el campo ingresado utiliza caracteres reservados\n"<<endl;
+  cout<<"Error de nombre, el nombre del campo ingresado no es valido\n"<<endl;
 }
 
 void response::_empty_error(void *args)
@@ -84,10 +84,9 @@ void response::_d_table(void *args)
   for(meta_table &db_table : *db_tables)
     if(db_table.name == _table_name)
       {
-        vector<table_colum> table_info = tools::read_file<table_colum>(db_table.path_info, GAA_TOKEN);
-	table_ram _vec = tools::cast_table<table_colum>(table_info);
+        table_ram table_info = tools::read_file<vector<string> >(db_table.path_info, GAA_TOKEN);
 	cout<<"Tabla \'"<<_table_name<<"\'\n";
-        print_table(_vec, {"columna", "tipo"});
+        print_table(table_info, {"columna", "tipo"});
 	_DONE;
       }
   cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
