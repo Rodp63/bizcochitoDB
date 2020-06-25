@@ -1,11 +1,11 @@
 create table alumnos(id int, nombre text, edad int, ciudad text, fecha_i date);
 \d alumnos
 
-insert into alumnos values(1, 'Jose', 18, 'Arequipa', '2020-06-01');
-insert into alumnos values(2, 'Juan', 20, 'Tacna', '2020-03-12');
-insert into alumnos values(3, 'Majo', 18, 'Arequipa', '2020-04-12');
-insert into alumnos values(4, 'Pedro', 17, 'Lima', '2020-04-21');
-insert into alumnos values(5, 'Sara', 21, 'Arequipa', '2020-06-12');
+insert into alumnos values(1, 'Jose', 18, 'Arequipa', '01-06-2020');
+insert into alumnos values(2, 'Juan', 20, 'Tacna', '07-08-2019');
+insert into alumnos values(3, 'Majo', 18, 'Arequipa', '08-04-2020');
+insert into alumnos values(4, 'Pedro', 17, 'Lima', '03-03-2020');
+insert into alumnos values(5, 'Sara', 21, 'Arequipa', '02-07-2019');
 
 select * from alumnos;
 select * from alumnos where edad > 17;
@@ -18,4 +18,5 @@ select * from alumnos;
 
 delete from alumnos where edad = 17;
 delete from alumnos where id > 3;
+delete from alumnos where fecha_i > '31-12-2019';
 select * from alumnos;

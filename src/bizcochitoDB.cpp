@@ -29,7 +29,7 @@ void bizcochitoDB::run()
 
 void bizcochitoDB::runscript()
 {
-  cout << "|> Ingrese el nombre del archivo: ";
+  cout << "\n|> Ingrese la ruta del archivo: ";
   string dir;
   getline(cin, dir);
   ifstream data(dir);

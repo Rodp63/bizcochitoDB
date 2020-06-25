@@ -60,7 +60,7 @@ struct tools{
 	  return false;
 	string tmp = data.substr(1,data.size()-2);
 	struct tm cur;
-	return strptime(tmp.c_str(), "%Y-%m-%d", &cur);
+	return strptime(tmp.c_str(), "%d-%m-%Y", &cur);
       }
     return true;
   }
@@ -71,10 +71,10 @@ struct tools{
       {
 	string A1 = a.substr(1, a.size()-2);
 	string A2 = b.substr(1, b.size()-2);
-	struct tm T1;
-	struct tm T2;
-	strptime(A1.c_str(), "%Y-%m-%d", &T1);
-	strptime(A2.c_str(), "%Y-%m-%d", &T2);
+	struct tm T1 = {0,0,0,0,0,0,0,0,0};
+	struct tm T2 = {0,0,0,0,0,0,0,0,0};
+	strptime(A1.c_str(), "%d-%m-%Y", &T1);
+	strptime(A2.c_str(), "%d-%m-%Y", &T2);
 	time_t ut1 = mktime(&T1);
 	time_t ut2 = mktime(&T2);
 	if(opt == EQUAL) return ut1 == ut2;
