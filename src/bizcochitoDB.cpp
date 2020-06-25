@@ -17,8 +17,7 @@ bizcochitoDB::~bizcochitoDB()
 
 void bizcochitoDB::run()
 {
-  cout<<"cake (v.1.0)"<<endl;
-  cout<<"Escriba \"help\" para ayuda.\n"<<endl;
+  cout<<"\nEscriba \"help\" para ayuda.\n"<<endl;
   running = true;
   while(running)
     {
@@ -26,4 +25,25 @@ void bizcochitoDB::run()
       par->get_query();
       res->solve(par->parse(), running);
     }
+}
+
+void bizcochitoDB::runscript()
+{
+  cout << "|> Ingrese el nombre del archivo: ";
+  string dir;
+  getline(cin, dir);
+  ifstream data(dir);
+  if(data.is_open())
+    {
+      string current_q;
+      while(getline(data, current_q))
+	{
+	  par->get_query(current_q);
+	  res->solve(par->parse(), running);
+	}
+      data.close();
+    }
+  else{
+    cout << "Archivo no encontrado" << endl;
+  }
 }

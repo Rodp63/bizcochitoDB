@@ -26,7 +26,7 @@ class parser{
   args_where* parse_condition();
   
   void _d_table();
-  void _create_table();
+  void _create();
   void _insert_into();
   void _select();
   void _update();
@@ -36,6 +36,7 @@ public:
   
   parser();
   void get_query();
+  void get_query(string&);
   query_info parse();
   
 };

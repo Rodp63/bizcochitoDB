@@ -12,20 +12,23 @@ using namespace std;
 
 
 // CODES
-#define NOTHING -1
-#define SYNTAX_ERROR 0
-#define TYPE_ERROR 1
-#define NAME_ERROR 2
-#define EMPTY_ERROR 3
-#define EXIT 4
-#define HELP 5
-#define DT 6
-#define D 7
-#define CREATE_TABLE 8
-#define INSERT_INTO 9
-#define SELECT 10
-#define UPDATE 11
-#define DELETE 12
+enum{
+     NOTHING,
+     SYNTAX_ERROR,
+     TYPE_ERROR,
+     NAME_ERROR,
+     EMPTY_ERROR,
+     EXIT,
+     HELP,
+     DT,
+     D,
+     CREATE,
+     CREATE_TABLE,
+     INSERT_INTO,
+     SELECT,
+     UPDATE,
+     DELETE
+};
 
 #define GAA_TOKEN '#'
 #define AEA_TOKEN '&'

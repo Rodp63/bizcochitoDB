@@ -9,6 +9,13 @@ void parser::get_query()
   current_pos = 0;
 }
 
+void parser::get_query(string &tex)
+{
+  query = tex;
+  query_size = query.size();
+  current_pos = 0;
+}
+
 string parser::get_word(char token1 = ' ', char token2 = ' ', char token3 = ' ')
 {
   string word;
@@ -33,8 +40,20 @@ string parser::get_phrase(char token)
     {
       phrase += query[current_pos];
     }
+  char ok = current_pos < query_size ? token : '\0';
   for(current_pos++; current_pos < query_size && query[current_pos] == ' '; current_pos++);
-  return token + phrase + token;
+  return token + phrase + ok;
+}
+
+bool parser::check_coma()
+{
+  int pos = query_size - 1;
+  for(; pos >= 0 && query[pos] == ' '; pos--);
+  if(query[pos] != ';') return false;
+  for(pos--; pos >= 0 && query[pos] == ' '; pos--);
+  query = query.substr(0, pos+1);
+  query_size = query.size();
+  return true;
 }
 
 void parser::get_type()
@@ -54,6 +73,12 @@ void parser::get_type()
       query_type == DT) && current_pos < query_size)
     {
       query_type = SYNTAX_ERROR;
+      return;
+    }
+  if(query_type >= CREATE && query_type <= DELETE && !check_coma())
+    {
+      query_type = NOTHING;
+      cout << "ERROR: Falta \';\' fin de expresion\n" << endl;
       return;
     }
 }
@@ -105,54 +130,65 @@ void parser::_d_table()
   query_args = (void*) current_args;
 }
 
-void parser::_create_table()
+void parser::_create()
 {
   args_table *current_args = new args_table;
-  string table_name = get_word('(');
-  if(!check_word(table_name))
+  string tag = get_word();
+  if(tag == "table")
     {
-      THROW_(NAME_ERROR);
-    }
-  else if(!table_name.empty() && current_pos < query_size && query[current_pos++] == '(')
-    {
-      for(; current_pos < query_size && query[current_pos] == ' '; current_pos++);
-      while(current_pos < query_size && query[current_pos] != ')')
+      query_type = CREATE_TABLE;
+      string table_name = get_word('(');
+      if(!check_word(table_name))
 	{
-	  string name_arg = get_word(',', ')');
-	  string type_arg = get_word(',', ')');
-	  if(name_arg.empty() || type_arg.empty())
+	  THROW_(NAME_ERROR);
+	}
+      else if(!table_name.empty() && current_pos < query_size && query[current_pos++] == '(')
+	{
+	  for(; current_pos < query_size && query[current_pos] == ' '; current_pos++);
+	  while(current_pos < query_size && query[current_pos] != ')')
 	    {
-	      THROW_(SYNTAX_ERROR);
-	    }
-	  if(find(data_types.begin(), data_types.end(), type_arg) == data_types.end())
-	    {
-	      THROW_(TYPE_ERROR);
-	    }
-	  if(name_arg == type_arg || !check_word(name_arg)) 
-	    {
-	      THROW_(NAME_ERROR);
-	    }
-	  if(current_pos < query_size)
-	    {
-	      if(query[current_pos] == ',') current_pos++;
-	      else if(query[current_pos] != ')')
+	      string name_arg = get_word(',', ')');
+	      string type_arg = get_word(',', ')');
+	      if(name_arg.empty() || type_arg.empty())
 		{
 		  THROW_(SYNTAX_ERROR);
 		}
-	    } 
-	  current_args->data.emplace_back(name_arg, type_arg);
+	      if(find(data_types.begin(), data_types.end(), type_arg) == data_types.end())
+		{
+		  THROW_(TYPE_ERROR);
+		}
+	      if(name_arg == type_arg || !check_word(name_arg)) 
+		{
+		  THROW_(NAME_ERROR);
+		}
+	      if(current_pos < query_size)
+		{
+		  if(query[current_pos] == ',') current_pos++;
+		  else if(query[current_pos] != ')')
+		    {
+		      THROW_(SYNTAX_ERROR);
+		    }
+		} 
+	      current_args->data.emplace_back(name_arg, type_arg);
+	    }
+	  string last = get_word();
+	  if(current_pos != query_size || last != ")")
+	    {
+	      THROW_(SYNTAX_ERROR);
+	    }
+	  if(current_args->data.empty())
+	    {
+	      THROW_(EMPTY_ERROR);
+	    }
+	  current_args->name = table_name;
+	  query_args = (void*)current_args; // todo ok!
 	}
-      string last = get_word();
-      if(current_pos != query_size || last != ")")
-	{
-	  THROW_(SYNTAX_ERROR);
-	}
-      if(current_args->data.empty())
-	{
-	  THROW_(EMPTY_ERROR);
-	}
-      current_args->name = table_name;
-      query_args = (void*)current_args; // todo ok!
+      else{
+	THROW_(SYNTAX_ERROR);
+      }
+    }
+  else if(tag == "index")
+    {
     }
   else{
     THROW_(SYNTAX_ERROR);
@@ -162,6 +198,10 @@ void parser::_create_table()
 void parser::_insert_into()
 {
   args_insert* current_args = new args_insert;
+  string check = get_word();
+  if(check != "into"){
+    THROW_(SYNTAX_ERROR);
+  }
   string table_name = get_word('(');
   if(!table_name.empty() || !check_word(table_name))
     {
@@ -372,8 +412,8 @@ parser::parser()
   keys["help"] = HELP;
   keys["\\dt"] = DT;
   keys["\\d"] = D;
-  keys["create_table"] = CREATE_TABLE;
-  keys["insert_into"] = INSERT_INTO;
+  keys["create"] = CREATE;
+  keys["insert"] = INSERT_INTO;
   keys["select"] = SELECT;
   keys["update"] = UPDATE;
   keys["delete"] = DELETE;
@@ -383,7 +423,7 @@ parser::parser()
   keys[">"] = GREATER;
   
   decode[D] = &parser::_d_table;
-  decode[CREATE_TABLE] = &parser::_create_table;
+  decode[CREATE] = &parser::_create;
   decode[INSERT_INTO] = &parser::_insert_into;
   decode[SELECT] = &parser::_select;
   decode[UPDATE] = &parser::_update;

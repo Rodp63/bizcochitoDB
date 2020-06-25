@@ -1,0 +1,10 @@
+create table alumnos(id int, nombre text, edad int, ciudad text);
+
+insert into alumnos values(1, 'Jose', 18, 'Arequipa');
+insert into alumnos values(2, 'Juan', 20, 'Tacna');
+insert into alumnos values(3, 'Majo', 18, 'Arequipa');
+insert into alumnos values(4, 'Pedro', 17, 'Lima');
+insert into alumnos values(5, 'Sara', 21, 'Arequipa');
+
+select * from alumnos;
+select * from alumnos where edad > 17;
