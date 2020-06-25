@@ -43,24 +43,44 @@ struct tools{
   {
     if(data.empty())
       return false;
-    if(type == "int"){
-      int ind = 0;
-      if(data[0] == '-' || data[0] == '+') ind++;
-      for(int i = ind; i < data.size(); i++){
-	if(!isdigit(data[i])) return false;
-      }}
+    if(type == "int")
+      {
+	int ind = 0;
+	if(data[0] == '-' || data[0] == '+') ind++;
+	for(int i = ind; i < data.size(); i++){
+	  if(!isdigit(data[i])) return false;
+	}}
     if(type == "text" && (data[0] != '\'' || data.back() != '\''))
-      return false;
-    if(type == "date"){
-      if(data[0] != '\'' || data.back() != '\'')
+      {
 	return false;
-      // Check date!!
-    }
+      }
+    if(type == "date")
+      {
+	if(data[0] != '\'' || data.back() != '\'')
+	  return false;
+	string tmp = data.substr(1,data.size()-2);
+	struct tm cur;
+	return strptime(tmp.c_str(), "%Y-%m-%d", &cur);
+      }
     return true;
   }
 
   static bool compare_values(const string &a, const string &b, string type, int opt)
   {
+    if(type == "date")
+      {
+	string A1 = a.substr(1, a.size()-2);
+	string A2 = b.substr(1, b.size()-2);
+	struct tm T1;
+	struct tm T2;
+	strptime(A1.c_str(), "%Y-%m-%d", &T1);
+	strptime(A2.c_str(), "%Y-%m-%d", &T2);
+	time_t ut1 = mktime(&T1);
+	time_t ut2 = mktime(&T2);
+	if(opt == EQUAL) return ut1 == ut2;
+	if(opt == LESS) return ut1 < ut2;
+	if(opt == GREATER) return ut1 > ut2;
+      }
     if(opt == EQUAL){
       if(type == "int")
 	return stoi(a) == stoi(b);

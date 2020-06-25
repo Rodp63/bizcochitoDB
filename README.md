@@ -1,7 +1,7 @@
 # bizcochitoDB
 Data Bases 2 Project
 
-Instalation
+Installation
 -----------
 To locally install bizcochitoDB run the following commands on your terminal:
 ```bash
