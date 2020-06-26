@@ -8,6 +8,7 @@
 #include <ctime>
 #include <stdlib.h>
 #include <time.h>
+#include <stdio.h>
 using namespace std;
 
 
@@ -27,7 +28,9 @@ enum{
      INSERT_INTO,
      SELECT,
      UPDATE,
-     DELETE
+     DELETE,
+     DROP,
+     DROP_TABLE
 };
 
 #define GAA_TOKEN '#'

@@ -75,7 +75,7 @@ void parser::get_type()
       query_type = SYNTAX_ERROR;
       return;
     }
-  if(query_type >= CREATE && query_type <= DELETE && !check_coma())
+  if(query_type >= CREATE && query_type <= DROP_TABLE && !check_coma())
     {
       query_type = NOTHING;
       cout << "ERROR: Falta \';\' fin de expresion\n" << endl;
@@ -391,6 +391,25 @@ void parser::_delete()
     THROW_(SYNTAX_ERROR);}
 }
 
+void parser::_drop()
+{
+  string *current_args = new string;
+  string obj = get_word();
+  if(obj == "table")
+    {
+      *current_args = get_word();
+      if(current_args->empty())
+	{
+	  THROW_(SYNTAX_ERROR);
+	}
+      query_type = DROP_TABLE;
+      query_args = (void*) current_args;
+    }
+  else{
+    THROW_(SYNTAX_ERROR);
+  }
+}
+
 query_info parser::parse()
 {
   get_type();
@@ -417,6 +436,7 @@ parser::parser()
   keys["select"] = SELECT;
   keys["update"] = UPDATE;
   keys["delete"] = DELETE;
+  keys["drop"] = DROP;
 
   keys["="] = EQUAL;
   keys["<"] = LESS;
@@ -428,4 +448,5 @@ parser::parser()
   decode[SELECT] = &parser::_select;
   decode[UPDATE] = &parser::_update;
   decode[DELETE] = &parser::_delete;
+  decode[DROP] = &parser::_drop;
 }

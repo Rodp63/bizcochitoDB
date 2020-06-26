@@ -44,6 +44,6 @@ void bizcochitoDB::runscript()
       data.close();
     }
   else{
-    cout << "Archivo no encontrado" << endl;
+    cout << "ERROR: Archivo no encontrado" << endl;
   }
 }

@@ -360,6 +360,30 @@ void response::_delete(void *args)
   _DONE;
 }
 
+void response::_drop_table(void *args)
+{
+  string* valid_args = (string*)args;
+  string _table_name = *valid_args;
+  ofstream new_file(META_TABLES_PATH);
+  auto rem = db_tables->end();
+  for(auto cur_table = db_tables->begin(); cur_table != db_tables->end(); cur_table++){
+    if(cur_table->name == _table_name)
+      rem = cur_table;
+    else
+      new_file << cur_table->name << GAA_TOKEN << cur_table->path_info << GAA_TOKEN << cur_table->path_data << GAA_TOKEN << '\n';
+  }
+  if(rem == db_tables->end()){
+    cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
+    _DONE;
+  }
+  cout<<"Tabla \'"<<rem->name<<"\' eliminada correctamente\n"<<endl; // Todo OK!
+  remove(rem->path_info.c_str());
+  remove(rem->path_data.c_str());
+  db_tables->erase(rem);
+  new_file.close();
+  _DONE;
+}
+
 void response::solve(query_info query, bool &running)
 {
   query_code = query.first;
@@ -389,4 +413,5 @@ response::response(vector<meta_table>* tables) : db_tables(tables)
   keys[SELECT] = &response::_select;
   keys[UPDATE] = &response::_update;
   keys[DELETE] = &response::_delete;
+  keys[DROP_TABLE] = &response::_drop_table;
 }

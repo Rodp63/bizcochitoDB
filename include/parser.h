@@ -31,6 +31,7 @@ class parser{
   void _select();
   void _update();
   void _delete();
+  void _drop();
   
 public:
   

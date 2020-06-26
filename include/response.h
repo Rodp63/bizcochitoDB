@@ -30,6 +30,7 @@ class response{
   void _select(void *);
   void _update(void *);
   void _delete(void *);
+  void _drop_table(void *);
   
 public:
 
