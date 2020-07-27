@@ -379,10 +379,10 @@ void response::_delete(void *args)
 	      new_table << row[i] << AEA_TOKEN;
 	    new_table << '\n';
 	  }}
-	active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
 	//index delete
 	cout<<"Borrado exitoso\n"<<endl;
 	new_table.close();
+	active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
 	_DONE;
       }
   }

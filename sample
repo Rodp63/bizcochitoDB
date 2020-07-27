@@ -7,16 +7,16 @@ insert into alumnos values(3, 'Majo', 18, 'Arequipa', '08-04-2020');
 insert into alumnos values(4, 'Pedro', 17, 'Lima', '03-03-2020');
 insert into alumnos values(5, 'Sara', 21, 'Arequipa', '02-07-2019');
 
-select * from alumnos;	
-select * from alumnos where edad > 17;	
-select * from alumnos where ciudad = 'Arequipa';	
-select nombre, ciudad, edad from alumnos where id < 3;	
+select * from alumnos;
+select * from alumnos where edad > 17;
+select * from alumnos where ciudad = 'Arequipa';
+select nombre, ciudad, edad from alumnos where id < 3;
 
-update alumnos set nombre = 'Mauro' where id = 1;	
-update alumnos set ciudad = 'Piura' where ciudad = 'Arequipa';	
-select * from alumnos;	
+update alumnos set nombre = 'Mauro' where id = 1;
+update alumnos set ciudad = 'Piura' where ciudad = 'Arequipa';
+select * from alumnos;
 
-delete from alumnos where edad = 17;	
-delete from alumnos where id > 3;	
-delete from alumnos where fecha_i > '31-12-2019';	
+delete from alumnos where edad = 17;
+delete from alumnos where id > 3;
+delete from alumnos where fecha_i > '31-12-2019';
 select * from alumnos;
