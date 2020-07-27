@@ -121,6 +121,11 @@ void response::_create_table(void *args)
   _DONE;
 }
 
+void response::_create_index(void *args)
+{
+  
+}
+
 void response::_insert_into(void *args)
 {
   args_insert* valid_args = (args_insert*) args;
@@ -149,22 +154,30 @@ void response::_insert_into(void *args)
 	  _DONE;
 	}
 	string util_info;
+	vector<string> _data;
 	for(const table_colum &colum : table_info)
 	  {
 	    int pos = find(q_cols.begin(), q_cols.end(), colum.name) - q_cols.begin();
 	    if(pos == q_cols.size())
-	      util_info += (__NULL + AEA_TOKEN);
-	    else{
-	      if(tools::check_type(q_vals[pos], colum.type)){
-		util_info += (q_vals[pos] + AEA_TOKEN);
-		q_vals.erase(q_vals.begin()+pos);
-		q_cols.erase(q_cols.begin()+pos);
+	      {
+		util_info += (__NULL + AEA_TOKEN);
+		_data.push_back(__NULL);
 	      }
+	    else{
+	      if(tools::check_type(q_vals[pos], colum.type))
+		{
+		  util_info += (q_vals[pos] + AEA_TOKEN);
+		  _data.push_back(q_vals[pos]);
+		  q_vals.erase(q_vals.begin()+pos);
+		  q_cols.erase(q_cols.begin()+pos);
+		}
 	      else{
 		cout<<"ERROR: El tipo de entrada y el tipo de columna difieren\n"<<endl;
 		_DONE;
 	      }
 	    }}
+	// insert if index
+	if(active_tables.count(_table_name)) active_tables[_table_name].push_back(_data);
 	ofstream table_data(db_table.path_data, ofstream::app);
 	table_data << util_info << '\n';
 	cout<<"Insercion exitosa\n"<<endl; // Todo Ok!
@@ -222,9 +235,13 @@ void response::_select(void *args)
 	  idx_col.pop_back();
 	  q_cols.pop_back();
 	}
-	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	if(active_tables.count(_table_name) == 0)
+	  {
+	    active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	  }
+	// INDEXX!!
 	table_ram table_query;
-	for(const vector<string> &row : table_data){
+	for(const vector<string> &row : active_tables[_table_name]){
 	  if(!where_active || (where_active && tools::compare_values(row[where_idx], _condition->value, table_info[where_idx].type, _condition->opt))){
 	    vector<string> tmp;
 	    for(int idx : idx_col)
@@ -289,20 +306,28 @@ void response::_update(void *args)
 	    _DONE;
 	  }
 	}
-	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	if(active_tables.count(_table_name) == 0)
+	  {
+	    active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	  }
         ofstream new_table(db_table.path_data);
-	for(const vector<string> &row : table_data){
+	for(int j = 0; j < active_tables[_table_name].size(); j++){
+	  vector<string> &row = active_tables[_table_name][j];
 	  if(where_active && !tools::compare_values(row[idx], _condition->value, table_info[idx].type, _condition->opt))
 	    for(int i = 0; i < row.size(); i++)
 	      new_table << row[i] << AEA_TOKEN;
 	  else{
 	    for(int i = 0; i < row.size(); i++){
-	      if(change[i]) new_table << new_data[i];
+	      if(change[i]){
+		new_table << new_data[i];
+		row[i] = new_data[i];
+	      }
 	      else new_table << row[i];
 	      new_table << AEA_TOKEN;
 	    }}
 	  new_table << '\n';
 	}
+	// Index update
 	cout<<"Modificacion exitosa\n"<<endl;
 	new_table.close();
 	_DONE;
@@ -343,14 +368,19 @@ void response::_delete(void *args)
 	    _DONE;
 	  }
 	}
-	table_ram table_data = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	if(active_tables.count(_table_name) == 0)
+	  {
+	    active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	  }
         ofstream new_table(db_table.path_data);
-	for(const vector<string> &row : table_data){
+	for(const vector<string> &row : active_tables[_table_name]){
 	  if(where_active && !tools::compare_values(row[idx], _condition->value, table_info[idx].type, _condition->opt)){
 	    for(int i = 0; i < row.size(); i++)
 	      new_table << row[i] << AEA_TOKEN;
 	    new_table << '\n';
 	  }}
+	active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	//index delete
 	cout<<"Borrado exitoso\n"<<endl;
 	new_table.close();
 	_DONE;
@@ -376,6 +406,7 @@ void response::_drop_table(void *args)
     cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
     _DONE;
   }
+  //drop index
   cout<<"Tabla \'"<<rem->name<<"\' eliminada correctamente\n"<<endl; // Todo OK!
   remove(rem->path_info.c_str());
   remove(rem->path_data.c_str());
@@ -397,7 +428,7 @@ void response::solve(query_info query, bool &running)
   (this->*keys[query_code])(query.second);
 }
 
-response::response(vector<meta_table>* tables) : db_tables(tables)
+response::response(vector<meta_table>* a) : db_tables(a)
 {
   keys[SYNTAX_ERROR] = &response::_syntax_error;
   keys[TYPE_ERROR] = &response::_type_error;
@@ -409,6 +440,7 @@ response::response(vector<meta_table>* tables) : db_tables(tables)
 
   keys[D] = &response::_d_table;
   keys[CREATE_TABLE] = &response::_create_table;
+  keys[CREATE_INDEX] = &response::_create_index;
   keys[INSERT_INTO] = &response::_insert_into;
   keys[SELECT] = &response::_select;
   keys[UPDATE] = &response::_update;

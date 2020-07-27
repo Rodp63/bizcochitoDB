@@ -25,6 +25,7 @@ enum{
      D,
      CREATE,
      CREATE_TABLE,
+     CREATE_INDEX,
      INSERT_INTO,
      SELECT,
      UPDATE,
@@ -54,7 +55,7 @@ static vector<string> data_types = {"int", "text", "date"};
 static vector<char> reserved_characters = {'{','}','(',')','$','\'','#','/','&','~',',','^'};
 
 
-//DB ACTIONS
+// DB ACTIONS
 #define THROW_(ERR) query_type = ERR; delete current_args; return
 #define _DONE delete valid_args; return
 

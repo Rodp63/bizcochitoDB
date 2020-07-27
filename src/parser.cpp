@@ -132,10 +132,10 @@ void parser::_d_table()
 
 void parser::_create()
 {
-  args_table *current_args = new args_table;
   string tag = get_word();
   if(tag == "table")
     {
+      args_table *current_args = new args_table;
       query_type = CREATE_TABLE;
       string table_name = get_word('(');
       if(!check_word(table_name))
@@ -189,9 +189,31 @@ void parser::_create()
     }
   else if(tag == "index")
     {
+      str_duo *current_args = new str_duo;
+      query_type = CREATE_INDEX;
+      tag = get_word();
+      if(tag == "on"){
+	string table_name = get_word('(');
+	if(!table_name.empty() && current_pos < query_size && query[current_pos++] == '(')
+	  {
+	    string col = get_word(')');
+	    string last = get_word();
+	    if(current_pos != query_size || last != ")")
+	      {
+		THROW_(SYNTAX_ERROR);
+	      }
+	    current_args->first = table_name;
+	    current_args->second = col;
+	    query_args = (void*)current_args;
+	  }
+	else{
+	  THROW_(SYNTAX_ERROR);}
+      }
+      else{
+	THROW_(SYNTAX_ERROR);}
     }
   else{
-    THROW_(SYNTAX_ERROR);
+    query_type = SYNTAX_ERROR;
   }
 }
 

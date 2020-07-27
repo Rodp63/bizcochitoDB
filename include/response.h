@@ -8,8 +8,8 @@ class response{
 
   typedef void (response::*fun_res)(void*);
 
-  map<string, vector<string> > info_tables;
-  vector<meta_table>* db_tables;
+  vector<meta_table> *db_tables;
+  map<string, table_ram> active_tables;  
   
   int query_code;
   fun_res keys[20];
@@ -26,6 +26,7 @@ class response{
 
   void _d_table(void *);
   void _create_table(void *);
+  void _create_index(void *);
   void _insert_into(void *);
   void _select(void *);
   void _update(void *);
@@ -35,6 +36,6 @@ class response{
 public:
 
   void solve(query_info query, bool &running);
-  response(vector<meta_table>* tables);
+  response(vector<meta_table>*);
   
 };
