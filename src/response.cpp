@@ -1,4 +1,5 @@
 #include "../include/response.h"
+#define CLI
 
 using namespace std;
 
@@ -231,8 +232,10 @@ void response::_insert_into(void *args)
 	  }
 	ofstream table_data(db_table.path_data, ofstream::app);
 	table_data << util_info << '\n';
+	table_data.close();	
+	#ifdef CLI
 	cout<<"Insercion exitosa\n"<<endl; // Todo Ok!
-	table_data.close();
+	#endif	
         _DONE;
       }
   cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
@@ -507,12 +510,20 @@ void response::solve(query_info query, bool &running)
       running = false;
       return;
     }
+  #ifdef CLI
+  
   t_start = high_resolution_clock::now();
   (this->*keys[query_code])(query.second);
   t_end = high_resolution_clock::now();
   t_total = duration_cast<chrono::nanoseconds>(t_end - t_start).count() * 1e-6;
   if(query_code > D)
     cout << fixed << setprecision(5) << "Time: " << t_total << " ms" <<endl;
+  
+  #else
+  
+  (this->*keys[query_code])(query.second);
+  
+  #endif
 }
 
 response::response(vector<meta_table>* a, vector<meta_index>* b) : db_tables(a), db_indexes(b)

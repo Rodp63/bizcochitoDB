@@ -36,6 +36,7 @@ void bizcochitoDB::runscript()
   ifstream data(dir);
   if(data.is_open())
     {
+      running = true;
       string current_q;
       while(getline(data, current_q))
 	{
@@ -51,5 +52,20 @@ void bizcochitoDB::runscript()
 
 void bizcochitoDB::runcode()
 {
+  running = true;
+  srand (time(NULL));
+  string c = "create table test (id int, cnt int);";
+  par->get_query(c);
+  res->solve(par->parse(), running);
+  
+  int n = 1000000;
+  for(int i = 0; i < n; i++){
+    int val = rand() % 10000;
+    string id = to_string(i);
+    string cnt = to_string(val);
+    string q = "insert into test values(" + id + "," + cnt + ");";
+    par->get_query(q);
+    res->solve(par->parse(), running);
+  }
   
 }
