@@ -49,25 +49,25 @@ void response::print_table(table_ram &table, vector<string> cols)
     for(int i = 0; i < n_cols; i++)
       max_size[i] = max(max_size[i], reg[i].size());
   }
-  cout<<"| ";
+  printf("| ");
   for(int i = 0; i < n_cols; i++){
     cout<<cols[i];
-    for(int j = 0; j < max_size[i] - cols[i].size(); j++) cout<<' ';
-    cout<<" | ";
+    for(int j = 0; j < max_size[i] - cols[i].size(); j++) printf(" ");
+    printf(" | ");
   }
-  cout<<"\n|";
+  printf("\n|");
   for(int i = 0; i < n_cols; i++){
-    for(int j = 0; j < max_size[i] + 2; j++) cout<<'-';
-    cout<<(i + 1 == n_cols ? "|\n" : "+");
+    for(int j = 0; j < max_size[i] + 2; j++) printf("-");
+    printf(i + 1 == n_cols ? "|\n" : "+");
   }
   for(vector<string> &row : table){
-    cout<<"| ";
+    printf("| ");
     for(int i = 0; i < n_cols; i++){
       cout<<row[i];
-      for(int j = 0; j < max_size[i] - row[i].size(); j++) cout<<' ';
-      cout<<" | ";
+      for(int j = 0; j < max_size[i] - row[i].size(); j++) printf(" ");
+      printf(" | ");
     }
-    cout<<"\n";
+    printf("\n");
   }
   cout<<"("<<table.size()<<" filas)"<<endl;
 }
