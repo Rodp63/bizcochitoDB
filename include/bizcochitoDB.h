@@ -8,6 +8,7 @@ using namespace std;
 class bizcochitoDB{
 
   vector<meta_table> _DB_tables_metadata;
+  vector<meta_index> _DB_indexes_metadata;
   map<string, table_ram> _DB_tables_info;
   parser* par;
   response* res;

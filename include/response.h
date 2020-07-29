@@ -1,6 +1,7 @@
 #pragma once
 #include "db_env.h"
 #include "tools.h"
+#include "index.h"
 
 using namespace std;
 
@@ -9,10 +10,12 @@ class response{
   typedef void (response::*fun_res)(void*);
 
   vector<meta_table> *db_tables;
-  map<string, table_ram> active_tables;  
+  vector<meta_index> *db_indexes;
+  map<string, table_ram> active_tables;
+  map<string, map<string, index_ram*> > active_indexes;
   
   int query_code;
-  fun_res keys[20];
+  fun_res keys[30];
 
   void print_table(table_ram &, vector<string>);
   
@@ -23,6 +26,7 @@ class response{
   
   void _help(void *);
   void _dt(void *);
+  void _di(void *);
 
   void _d_table(void *);
   void _create_table(void *);
@@ -34,8 +38,9 @@ class response{
   void _drop_table(void *);
   
 public:
-
+  
+  response(vector<meta_table>*, vector<meta_index> *);
+  ~response();
   void solve(query_info query, bool &running);
-  response(vector<meta_table>*);
   
 };

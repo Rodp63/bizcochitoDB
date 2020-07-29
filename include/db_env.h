@@ -22,6 +22,7 @@ enum{
      EXIT,
      HELP,
      DT,
+     DI,
      D,
      CREATE,
      CREATE_TABLE,
@@ -36,6 +37,7 @@ enum{
 
 #define GAA_TOKEN '#'
 #define AEA_TOKEN '&'
+#define INDEX_TOKEN '$'
 
 #define EQUAL 100
 #define LESS 101
@@ -47,6 +49,7 @@ enum{
 #define META_INDEXES_PATH "metadata/db_indexes.gaa"
 #define TABLES_INFO_PATH "metadata/tables/"
 #define TABLES_DATA_PATH "data/tables/"
+#define INDEXES_DATA_PATH "data/indexes/"
 
 
 // DB VARIABLES
@@ -73,6 +76,20 @@ struct meta_table{
     name = inf[0];
     path_info = inf[1];
     path_data = inf[2];
+  }
+};
+
+struct meta_index{
+  string table;
+  string colum;
+  string path_data;
+  int col_idx;
+  vector<string> cast_vec(){ return {table, colum, path_data}; }
+  meta_index(vector<string> inf){
+    table = inf[0];
+    colum = inf[1];
+    path_data = inf[2];
+    col_idx = stoi(inf[3]);
   }
 };
 

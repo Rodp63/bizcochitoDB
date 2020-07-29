@@ -70,7 +70,8 @@ void parser::get_type()
   query_type = keys[tipo];
   if((query_type == EXIT ||
       query_type == HELP ||
-      query_type == DT) && current_pos < query_size)
+      query_type == DT ||
+      query_type == DI) && current_pos < query_size)
     {
       query_type = SYNTAX_ERROR;
       return;
@@ -440,7 +441,7 @@ query_info parser::parse()
     {
       query_type = SYNTAX_ERROR;
     }
-  if(query_type > DT)
+  if(query_type >= D)
     {
       (this->*decode[query_type])();
     }
@@ -452,6 +453,7 @@ parser::parser()
   keys["exit"] = EXIT;
   keys["help"] = HELP;
   keys["\\dt"] = DT;
+  keys["\\di"] = DI;
   keys["\\d"] = D;
   keys["create"] = CREATE;
   keys["insert"] = INSERT_INTO;

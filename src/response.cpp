@@ -32,7 +32,8 @@ void response::_help(void *args)
   cout<<"Los siguientes comandos están disponibles:\n";
   cout<<"\t exit \t\t Salir de cake\n";  
   cout<<"\t help \t\t Lista los comandos disponibles\n";
-  cout<<"\t \\d [TABLE] \t Describe las columnas de una tabla\n";
+  cout<<"\t \\d [TABLE] \t Describe la tabla especificada\n";
+  cout<<"\t \\di \t\t Lista los indices existentes\n";
   cout<<"\t \\dt \t\t Lista las tablas existentes\n"<<endl;
 }
 
@@ -67,7 +68,7 @@ void response::print_table(table_ram &table, vector<string> cols)
     }
     cout<<"\n";
   }
-  cout<<"("<<table.size()<<" filas)\n"<<endl;
+  cout<<"("<<table.size()<<" filas)"<<endl;
 }
 
 void response::_dt(void *args)
@@ -75,6 +76,15 @@ void response::_dt(void *args)
   table_ram _table= tools::cast_table<meta_table>(*db_tables);
   cout<<"Tablas actuales\n";
   print_table(_table, {"tabla", "path_info", "path_data"});
+  cout<<endl;
+}
+
+void response::_di(void *args)
+{
+  table_ram _table= tools::cast_table<meta_index>(*db_indexes);
+  cout<<"Indices actuales\n";
+  print_table(_table, {"tabla", "columna", "path_data"});
+  cout<<endl;
 }
 
 void response::_d_table(void *args)
@@ -87,6 +97,10 @@ void response::_d_table(void *args)
         table_ram table_info = tools::read_file<vector<string> >(db_table.path_info, GAA_TOKEN);
 	cout<<"Tabla \'"<<_table_name<<"\'\n";
         print_table(table_info, {"columna", "tipo"});
+	for(meta_index &db_index : *db_indexes)
+	  if(db_index.table == _table_name)
+	    cout << "INDEX: indice secundario sobre (" << db_index.colum << ")\n";
+	cout<<endl;
 	_DONE;
       }
   cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
@@ -123,7 +137,37 @@ void response::_create_table(void *args)
 
 void response::_create_index(void *args)
 {
-  
+  str_duo* valid_args = (str_duo*) args;
+  string &_table_name = valid_args->first;
+  string &_colum = valid_args->second;
+  for(meta_index &db_index : *db_indexes)
+    if(db_index.table == _table_name && db_index.colum == _colum){
+      cout<<"ERROR: La tabla \'"<<_table_name<<"\' ya posee un indice sobre \'"<<_colum<<"\'\n"<<endl;
+      _DONE;
+    }
+  for(const meta_table &db_table : *db_tables)
+    if(db_table.name == _table_name)
+      {
+	vector<table_colum> table_info = tools::read_file<table_colum>(db_table.path_info, GAA_TOKEN);
+	int ind = -1;
+	for(int i = 0; i < table_info.size(); i++){
+	  if(table_info[i].name == _colum) ind = i;
+	}
+	if(ind == -1){
+	  cout<<"ERROR: La columna \'"<<_colum<<"\' no existe en la tabla\n"<<endl;
+	  _DONE;
+	}
+	string _path_data = INDEXES_DATA_PATH + _table_name + INDEX_TOKEN + _colum + ".aea";
+	ofstream index_file(META_INDEXES_PATH, ofstream::app);
+	index_file <<_table_name << GAA_TOKEN << _colum << GAA_TOKEN << _path_data << GAA_TOKEN << ind << GAA_TOKEN << '\n';
+	vector<string> _info = {_table_name, _colum, _path_data, to_string(ind)};
+	db_indexes->emplace_back(_info);
+	cout<<"Indice sobre \'"<<_table_name<<"\' creado exitosamente\n"<<endl;
+	index_file.close();
+	_DONE;
+      }
+  cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
+  _DONE;
 }
 
 void response::_insert_into(void *args)
@@ -143,8 +187,7 @@ void response::_insert_into(void *args)
 	  if(!ok){
 	    cout<<"ERROR: La columna \'"<<col<<"\' no existe en la tabla\n"<<endl;
 	    _DONE;
-	  }
-	}
+	  }}
 	if(valid_args->default_cols){
 	  for(const table_colum &colum : table_info)
 	    q_cols.push_back(colum.name);
@@ -176,8 +219,16 @@ void response::_insert_into(void *args)
 		_DONE;
 	      }
 	    }}
-	// insert if index
-	if(active_tables.count(_table_name)) active_tables[_table_name].push_back(_data);
+        if(active_indexes.count(_table_name))
+	  {
+	    for(auto &p : active_indexes[_table_name]){
+	      p.second->insert(_data[p.second->col_ind]);
+	    }
+	  }
+	if(active_tables.count(_table_name))
+	  {
+	    active_tables[_table_name].push_back(_data);
+	  }
 	ofstream table_data(db_table.path_data, ofstream::app);
 	table_data << util_info << '\n';
 	cout<<"Insercion exitosa\n"<<endl; // Todo Ok!
@@ -239,9 +290,26 @@ void response::_select(void *args)
 	  {
 	    active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
 	  }
-	// INDEXX!!
+	bool index_active = false;
+	if(where_active){
+	  if(active_indexes.count(_table_name) && active_indexes[_table_name].count(_condition->colum)) index_active = true; 
+	  else{
+	    for(meta_index &db_index : *db_indexes)
+	      if(db_index.table == _table_name && db_index.colum == _condition->colum){
+		active_indexes[_table_name][_condition->colum] = new index_ram(&active_tables[_table_name], db_index.col_idx);
+		index_active = true;
+	      }}
+	}
+	vector<int> affected_rows;
+	if(index_active){
+	  active_indexes[_table_name][_condition->colum]->search(affected_rows, _condition);
+	}
+	else{
+	  for(int i = 0; i < active_tables[_table_name].size(); i++) affected_rows.push_back(i);
+	}
 	table_ram table_query;
-	for(const vector<string> &row : active_tables[_table_name]){
+	for(const int i : affected_rows){
+	  vector<string> &row = active_tables[_table_name][i];
 	  if(!where_active || (where_active && tools::compare_values(row[where_idx], _condition->value, table_info[where_idx].type, _condition->opt))){
 	    vector<string> tmp;
 	    for(int idx : idx_col)
@@ -249,6 +317,7 @@ void response::_select(void *args)
 	    table_query.push_back(tmp);
 	  }}
 	print_table(table_query, q_cols);
+	cout<<endl;
 	_DONE;
       }
   }
@@ -317,6 +386,10 @@ void response::_update(void *args)
 	    for(int i = 0; i < row.size(); i++)
 	      new_table << row[i] << AEA_TOKEN;
 	  else{
+	    if(active_indexes.count(_table_name))
+	      for(auto &p : active_indexes[_table_name]){
+		if(change[p.second->col_ind]) p.second->update(j, new_data[p.second->col_ind]);
+	      }
 	    for(int i = 0; i < row.size(); i++){
 	      if(change[i]){
 		new_table << new_data[i];
@@ -324,10 +397,10 @@ void response::_update(void *args)
 	      }
 	      else new_table << row[i];
 	      new_table << AEA_TOKEN;
-	    }}
+	    }
+	  }
 	  new_table << '\n';
 	}
-	// Index update
 	cout<<"Modificacion exitosa\n"<<endl;
 	new_table.close();
 	_DONE;
@@ -373,16 +446,25 @@ void response::_delete(void *args)
 	    active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
 	  }
         ofstream new_table(db_table.path_data);
+	bool change = false;
 	for(const vector<string> &row : active_tables[_table_name]){
 	  if(where_active && !tools::compare_values(row[idx], _condition->value, table_info[idx].type, _condition->opt)){
 	    for(int i = 0; i < row.size(); i++)
 	      new_table << row[i] << AEA_TOKEN;
 	    new_table << '\n';
-	  }}
-	//index delete
-	cout<<"Borrado exitoso\n"<<endl;
+	  }
+	  else change = true;
+	}
 	new_table.close();
-	active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	if(change){
+	  active_tables[_table_name] = tools::read_file<vector<string> >(db_table.path_data, AEA_TOKEN);
+	  if(active_indexes.count(_table_name))
+	    {
+	      for(auto &p : active_indexes[_table_name]){
+		p.second->build(&active_tables[_table_name]);
+	      }
+	    }}
+	cout<<"Borrado exitoso\n"<<endl;
 	_DONE;
       }
   }
@@ -428,7 +510,7 @@ void response::solve(query_info query, bool &running)
   (this->*keys[query_code])(query.second);
 }
 
-response::response(vector<meta_table>* a) : db_tables(a)
+response::response(vector<meta_table>* a, vector<meta_index>* b) : db_tables(a), db_indexes(b)
 {
   keys[SYNTAX_ERROR] = &response::_syntax_error;
   keys[TYPE_ERROR] = &response::_type_error;
@@ -437,6 +519,7 @@ response::response(vector<meta_table>* a) : db_tables(a)
   
   keys[HELP] = &response::_help;
   keys[DT] = &response::_dt;
+  keys[DI] = &response::_di;
 
   keys[D] = &response::_d_table;
   keys[CREATE_TABLE] = &response::_create_table;
@@ -446,4 +529,11 @@ response::response(vector<meta_table>* a) : db_tables(a)
   keys[UPDATE] = &response::_update;
   keys[DELETE] = &response::_delete;
   keys[DROP_TABLE] = &response::_drop_table;
+}
+
+response::~response()
+{
+  for(auto p : active_indexes)
+    for(auto q: p.second)
+      delete q.second;
 }

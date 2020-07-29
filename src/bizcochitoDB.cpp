@@ -5,8 +5,9 @@ using namespace std;
 bizcochitoDB::bizcochitoDB()
 {
   _DB_tables_metadata = tools::read_file<meta_table>(META_TABLES_PATH, GAA_TOKEN);
+  _DB_indexes_metadata = tools::read_file<meta_index>(META_INDEXES_PATH, GAA_TOKEN);
   par = new parser();
-  res = new response(&_DB_tables_metadata);
+  res = new response(&_DB_tables_metadata, &_DB_indexes_metadata);
 }
 
 bizcochitoDB::~bizcochitoDB()

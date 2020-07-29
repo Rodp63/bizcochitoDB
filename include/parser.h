@@ -15,8 +15,7 @@ class parser{
   void* query_args;
   
   map<string,int> keys;
-  ptr_par decode[20];
-  vector<meta_table>* db_tables;
+  ptr_par decode[30];
 
   void get_type();
   string get_word(char,char,char);
