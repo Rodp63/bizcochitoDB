@@ -48,3 +48,8 @@ void bizcochitoDB::runscript()
     cout << "ERROR: Archivo no encontrado" << endl;
   }
 }
+
+void bizcochitoDB::runcode()
+{
+  
+}

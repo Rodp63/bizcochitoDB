@@ -4,10 +4,12 @@
 #include "index.h"
 
 using namespace std;
+using namespace std::chrono;
 
 class response{
 
   typedef void (response::*fun_res)(void*);
+  typedef high_resolution_clock::time_point cclock;
 
   vector<meta_table> *db_tables;
   vector<meta_index> *db_indexes;
@@ -16,6 +18,9 @@ class response{
   
   int query_code;
   fun_res keys[30];
+  cclock t_start;
+  cclock t_end;
+  double t_total;
 
   void print_table(table_ram &, vector<string>);
   

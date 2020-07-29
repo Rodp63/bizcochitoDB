@@ -20,5 +20,6 @@ public:
   ~bizcochitoDB();
   void run();
   void runscript();
+  void runcode();
 
 };

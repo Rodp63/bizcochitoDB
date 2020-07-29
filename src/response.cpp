@@ -507,7 +507,12 @@ void response::solve(query_info query, bool &running)
       running = false;
       return;
     }
+  t_start = high_resolution_clock::now();
   (this->*keys[query_code])(query.second);
+  t_end = high_resolution_clock::now();
+  t_total = duration_cast<chrono::nanoseconds>(t_end - t_start).count() * 1e-6;
+  if(query_code > D)
+    cout << fixed << setprecision(5) << "Time: " << t_total << " ms" <<endl;
 }
 
 response::response(vector<meta_table>* a, vector<meta_index>* b) : db_tables(a), db_indexes(b)

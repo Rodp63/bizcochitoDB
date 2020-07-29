@@ -19,4 +19,6 @@ int main()
     DB->runscript();
   else
     DB->run();
+  
+  delete DB;
 }
