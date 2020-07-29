@@ -11,5 +11,5 @@ make install
 ```
 **cake** is the command line interface to bizcochitoDB, to run it type:
 ```bash
-$ ./cake
+./cake
 ```
