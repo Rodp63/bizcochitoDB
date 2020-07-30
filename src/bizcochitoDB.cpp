@@ -54,17 +54,17 @@ void bizcochitoDB::runcode()
 {
   running = true;
   srand (time(NULL));
-  string c = "create table test (id int, cnt int);";
-  par->get_query(c);
+  string a = "create table 500k_1 (id int, cnt int);";
+  par->get_query(a);
   res->solve(par->parse(), running);
   
-  int n = 1000000;
+  int n = 500000;
   for(int i = 0; i < n; i++){
     int val = rand() % 10000;
     string id = to_string(i);
     string cnt = to_string(val);
-    string q = "insert into test values(" + id + "," + cnt + ");";
-    par->get_query(q);
+    string q1 = "insert into 500k_1 values(" + id + "," + cnt + ");";
+    par->get_query(q1);
     res->solve(par->parse(), running);
   }
   

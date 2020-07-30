@@ -2,6 +2,7 @@ all:
 	g++ -std=c++14 -O2 -pipe src/*cpp -o cake
 test:
 	g++ -std=c++14 src/*cpp -o cake_test
+	./cake_test
 install:
 	mkdir -p data/tables
 	mkdir -p data/indexes
