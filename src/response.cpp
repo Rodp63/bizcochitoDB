@@ -84,7 +84,7 @@ void response::_di(void *args)
 {
   table_ram _table= tools::cast_table<meta_index>(*db_indexes);
   cout<<"Indices actuales\n";
-  print_table(_table, {"tabla", "columna", "path_data"});
+  print_table(_table, {"nombre","tabla", "columna", "path_data"});
   cout<<endl;
 }
 
@@ -100,7 +100,7 @@ void response::_d_table(void *args)
         print_table(table_info, {"columna", "tipo"});
 	for(meta_index &db_index : *db_indexes)
 	  if(db_index.table == _table_name)
-	    cout << "INDEX: indice secundario sobre (" << db_index.colum << ")\n";
+	    cout << "INDEX: indice secundario \'" << db_index.name << "\' sobre (" << db_index.colum << ")\n";
 	cout<<endl;
 	_DONE;
       }
@@ -295,7 +295,7 @@ void response::_select(void *args)
 	  }
 	bool index_active = false;
 	if(where_active){
-	  if(active_indexes.count(_table_name) && active_indexes[_table_name].count(_condition->colum)) index_active = true; 
+	  if(active_indexes.count(_table_name) && active_indexes[_table_name].count(_condition->colum)) index_active = true;
 	  else{
 	    for(meta_index &db_index : *db_indexes)
 	      if(db_index.table == _table_name && db_index.colum == _condition->colum){
@@ -475,6 +475,37 @@ void response::_delete(void *args)
   _DONE;
 }
 
+void response::_drop_index(void *args)
+{
+  string* valid_args = (string*)args;
+  string _index_name = *valid_args;
+  ofstream new_file(META_INDEXES_PATH);
+  auto rem = db_indexes->end();
+  for(auto cur_index = db_indexes->begin(); cur_index != db_indexes->end(); cur_index++){
+    if(cur_index->name == _index_name)
+      rem = cur_index;
+    else
+      new_file << cur_index->table << GAA_TOKEN << cur_index->colum << GAA_TOKEN << cur_index->path_data << GAA_TOKEN << cur_index->col_idx << GAA_TOKEN << '\n';
+  }
+  if(rem == db_indexes->end()){
+    cout<<"ERROR: No se encontro ningun indice llamado \'"<<_index_name<<"\'\n"<<endl;
+    _DONE;
+  }
+  cout<<"Indice \'"<<rem->name<<"\' eliminado correctamente\n"<<endl; // Todo OK!
+  //remove(rem->path_data.c_str());
+  if(active_indexes.count(rem->table) && active_indexes[rem->table].count(rem->colum))
+    {
+      delete active_indexes[rem->table][rem->colum];
+      active_indexes[rem->table].erase(rem->colum);
+      if(active_indexes[rem->table].empty())
+	{
+	  active_indexes.erase(rem->table);
+	}}
+  db_indexes->erase(rem);
+  new_file.close();
+  _DONE;
+}
+
 void response::_drop_table(void *args)
 {
   string* valid_args = (string*)args;
@@ -491,7 +522,12 @@ void response::_drop_table(void *args)
     cout<<"ERROR: No se encontro ninguna tabla llamada \'"<<_table_name<<"\'\n"<<endl;
     _DONE;
   }
-  //drop index
+  for(meta_index &db_index : *db_indexes)
+    if(db_index.table == _table_name){
+      string* _idx_name = new string(db_index.name);
+      _drop_index((void*)_idx_name);
+    }
+  if(active_tables.count(_table_name)) active_tables.erase(_table_name);
   cout<<"Tabla \'"<<rem->name<<"\' eliminada correctamente\n"<<endl; // Todo OK!
   remove(rem->path_info.c_str());
   remove(rem->path_data.c_str());
@@ -545,6 +581,7 @@ response::response(vector<meta_table>* a, vector<meta_index>* b) : db_tables(a),
   keys[UPDATE] = &response::_update;
   keys[DELETE] = &response::_delete;
   keys[DROP_TABLE] = &response::_drop_table;
+  keys[DROP_INDEX] = &response::_drop_index;
 }
 
 response::~response()

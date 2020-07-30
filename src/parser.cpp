@@ -418,14 +418,14 @@ void parser::_drop()
 {
   string *current_args = new string;
   string obj = get_word();
-  if(obj == "table")
+  if(obj == "table" || obj == "index")
     {
       *current_args = get_word();
       if(current_args->empty())
 	{
 	  THROW_(SYNTAX_ERROR);
 	}
-      query_type = DROP_TABLE;
+      query_type = (obj == "table" ? DROP_TABLE : DROP_INDEX);
       query_args = (void*) current_args;
     }
   else{

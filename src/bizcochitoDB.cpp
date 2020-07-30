@@ -52,20 +52,36 @@ void bizcochitoDB::runscript()
 
 void bizcochitoDB::runcode()
 {
+  /*
+    Code made to test database!
+   */
+  
   running = true;
   srand (time(NULL));
-  string a = "create table 500k_1 (id int, cnt int);";
+  string a = "create table 500k_1 (id int, edad int, nombre text, apellido text, fecha date);";
+  string b = "create table 500k_2 (id int, edad int, nombre text, apellido text, fecha date);";
   par->get_query(a);
+  res->solve(par->parse(), running);
+  par->get_query(b);
   res->solve(par->parse(), running);
   
   int n = 500000;
+  ofstream data1("data/tables/500k_1.aea");
+  ofstream data2("data/tables/500k_2.aea");
   for(int i = 0; i < n; i++){
-    int val = rand() % 10000;
-    string id = to_string(i);
-    string cnt = to_string(val);
-    string q1 = "insert into 500k_1 values(" + id + "," + cnt + ");";
-    par->get_query(q1);
-    res->solve(par->parse(), running);
+    string id = to_string(i) + AEA_TOKEN;
+    string ed = to_string(rand() % 200) + AEA_TOKEN;
+    string nom = "\'nombre" + to_string(i) + "\'" + AEA_TOKEN;
+    string ap = "\'apellido" + to_string(i) + "\'" + AEA_TOKEN;
+    string year = to_string(2018 + (rand() % 3));
+    string mon = to_string(1 + (rand() % 12));
+    string day = to_string(1 + (rand() % 28));
+    string dat = "\'" + day + "-" + mon + "-" + year + "\'" + AEA_TOKEN;
+    string push = id + ed + nom + ap + dat + '\n';
+    data1 << push;
+    data2 << push;
   }
+  data1.close();
+  data2.close();
   
 }

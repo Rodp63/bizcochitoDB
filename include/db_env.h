@@ -33,7 +33,8 @@ enum{
      UPDATE,
      DELETE,
      DROP,
-     DROP_TABLE
+     DROP_TABLE,
+     DROP_INDEX
 };
 
 #define GAA_TOKEN '#'
@@ -81,16 +82,18 @@ struct meta_table{
 };
 
 struct meta_index{
+  string name;
   string table;
   string colum;
   string path_data;
   int col_idx;
-  vector<string> cast_vec(){ return {table, colum, path_data}; }
+  vector<string> cast_vec(){ return {name, table, colum, path_data}; }
   meta_index(vector<string> inf){
     table = inf[0];
     colum = inf[1];
     path_data = inf[2];
     col_idx = stoi(inf[3]);
+    name = "idx_" + table + "_" + colum;
   }
 };
 
