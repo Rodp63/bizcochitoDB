@@ -313,7 +313,7 @@ void response::_select(void *args)
 	table_ram table_query;
 	for(const int i : affected_rows){
 	  vector<string> &row = active_tables[_table_name][i];
-	  if(!where_active || (where_active && tools::compare_values(row[where_idx], _condition->value, table_info[where_idx].type, _condition->opt))){
+	  if(index_active || !where_active || (where_active && tools::compare_values(row[where_idx], _condition->value, table_info[where_idx].type, _condition->opt))){
 	    vector<string> tmp;
 	    for(int idx : idx_col)
 	      tmp.push_back(row[idx]);
